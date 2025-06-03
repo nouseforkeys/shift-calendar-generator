@@ -9,11 +9,10 @@ from datetime import datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QTimeEdit, QPushButton, QHBoxLayout,
-    QWidget, QCalendarWidget, QFileDialog
-)
 from PyQt6.QtCore import QTime
+from PyQt6.QtWidgets import (QApplication, QCalendarWidget, QFileDialog,
+                             QHBoxLayout, QMainWindow, QPushButton, QTimeEdit,
+                             QWidget)
 
 log = logging.getLogger(Path(__file__).name)
 logging.basicConfig(level=logging.INFO)
