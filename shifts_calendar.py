@@ -2,12 +2,17 @@
 creates calendar events for shift work
 """
 
+import logging
+import sys
 from dataclasses import dataclass
 from datetime import datetime
-import logging
 from pathlib import Path
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QDateEdit, QTimeEdit, QPushButton, QHBoxLayout,
+    QWidget
+)
 
 log = logging.getLogger(Path(__file__).name)
 logging.basicConfig(level=logging.INFO)
@@ -77,16 +82,31 @@ class Calendar:
         log.info(f'saved to "{save_to}"')
 
 
-c = Calendar(prodid=Path(__file__).name)
-print(c)
-for day in range(4, 6):
-    c.events.append(Event(
-        'Admo',
-        datetime(year=2025, month=6, day=day),
-        datetime(year=2025, month=6, day=day+1),
-        'stuff'
-    ))
-print(c)
-output_dir = Path('outputs')
-output_dir.mkdir(exist_ok=True)
-c.to_file(output_dir / 'test')
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle(Path(__file__).name)
+
+        layout = QHBoxLayout()
+        add_button = QPushButton('Add event')
+        del_button = QPushButton('Delete last event')
+        start_time = QTimeEdit()
+        end_time = QTimeEdit()
+        date_edit = QDateEdit()
+        layout.addWidget(add_button)
+        layout.addWidget(del_button)
+        layout.addWidget(start_time)
+        layout.addWidget(end_time)
+        layout.addWidget(date_edit)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+
+
+app = QApplication(sys.argv)
+
+window = MainWindow()
+window.show()
+
+app.exec()
