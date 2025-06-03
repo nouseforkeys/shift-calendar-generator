@@ -10,9 +10,10 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QDateEdit, QTimeEdit, QPushButton, QHBoxLayout,
-    QWidget
+    QApplication, QMainWindow, QTimeEdit, QPushButton, QHBoxLayout,
+    QWidget, QCalendarWidget, QFileDialog
 )
+from PyQt6.QtCore import QTime
 
 log = logging.getLogger(Path(__file__).name)
 logging.basicConfig(level=logging.INFO)
@@ -89,19 +90,71 @@ class MainWindow(QMainWindow):
 
         layout = QHBoxLayout()
         add_button = QPushButton('Add event')
+        add_button.clicked.connect(self.add_event)
+
         del_button = QPushButton('Delete last event')
-        start_time = QTimeEdit()
-        end_time = QTimeEdit()
-        date_edit = QDateEdit()
+        del_button.clicked.connect(self.delete_last_event)
+
+        self.save_dialog = QFileDialog()
+        self.save_dialog.setDefaultSuffix('.ics')
+
+        save_button = QPushButton('Save to file...')
+        save_button.clicked.connect(self.save_to_file)
+
+        self.start_time_input = QTimeEdit()
+        self.start_time_input.setTime(QTime(7, 0))
+
+        self.end_time_input = QTimeEdit()
+        self.end_time_input.setTime(QTime(20, 0))
+
+        self.date_input = QCalendarWidget()
+
         layout.addWidget(add_button)
         layout.addWidget(del_button)
-        layout.addWidget(start_time)
-        layout.addWidget(end_time)
-        layout.addWidget(date_edit)
+        layout.addWidget(save_button)
+        layout.addWidget(self.start_time_input)
+        layout.addWidget(self.end_time_input)
+        layout.addWidget(self.date_input)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+        self.calendar = Calendar(Path(__file__).name)
+
+    def add_event(self) -> None:
+        """adds an event with the current time settings"""
+        start_time = self.start_time_input.time()
+        end_time = self.end_time_input.time()
+        date = self.date_input.selectedDate()
+
+        start_datetime = datetime(
+            year=date.year(), month=date.month(), day=date.day(),
+            hour=start_time.hour(), minute=start_time.minute(),
+        )
+        end_datetime = datetime(
+            year=date.year(), month=date.month(), day=date.day(),
+            hour=end_time.hour(), minute=end_time.minute(),
+        )
+
+        event = Event(
+            organiser=Path(__file__).name,
+            dtstart=start_datetime,
+            dtend=end_datetime,
+            summary='long day'
+        )
+        self.calendar.events.append(event)
+        log.info(f'added {event=}')
+
+    def delete_last_event(self) -> None:
+        """deletes the most recently added event from the calendar"""
+        if len(self.calendar.events) > 0:
+            self.calendar.events.pop()
+            log.info('deleted last event')
+
+    def save_to_file(self) -> None:
+        """opens a file dialog and saves the file to the specified filename"""
+        self.calendar.to_file(Path(self.save_dialog.getSaveFileName()[0]))
 
 
 app = QApplication(sys.argv)
