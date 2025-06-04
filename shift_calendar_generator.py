@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         self.shift_events.append(
             EventLayout(event, self.get_delete_func(event)))
         self.update_shifts()
-        log.info(f'added {event.gui_str()=}')
+        log.info(f'added event: {event.gui_str()}')
 
     def delete_last_event(self) -> None:
         """deletes the most recently added event from the calendar"""
@@ -227,7 +227,7 @@ class MainWindow(QMainWindow):
                 if event_layout.event == event:
                     break
             self.update_shifts()
-            log.info('deleted last event')
+            log.info(f'deleted last event: {event.gui_str()}')
 
     def get_delete_func(self, event: Event) -> callable:
         """returns a func that an EventLayout can use to delete itself"""
