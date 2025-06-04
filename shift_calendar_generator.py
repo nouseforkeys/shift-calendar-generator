@@ -11,8 +11,8 @@ from uuid import UUID, uuid4
 
 from PyQt6.QtCore import QTime
 from PyQt6.QtWidgets import (QApplication, QCalendarWidget, QFileDialog,
-                             QHBoxLayout, QMainWindow, QPushButton, QTimeEdit,
-                             QWidget)
+                             QGridLayout, QHBoxLayout, QLabel, QMainWindow,
+                             QPushButton, QTimeEdit, QVBoxLayout, QWidget)
 
 log = logging.getLogger(Path(__file__).name)
 logging.basicConfig(level=logging.INFO)
@@ -88,8 +88,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(Path(__file__).name)
 
         layout = QHBoxLayout()
+        controls = QVBoxLayout()
+
         add_button = QPushButton('Add event')
         add_button.clicked.connect(self.add_event)
+        add_button.setFixedHeight(100)
 
         del_button = QPushButton('Delete last event')
         del_button.clicked.connect(self.delete_last_event)
@@ -106,14 +109,25 @@ class MainWindow(QMainWindow):
         self.end_time_input = QTimeEdit()
         self.end_time_input.setTime(QTime(20, 0))
 
+        time_grid = QGridLayout()
+        start_label = QLabel()
+        start_label.setText('Shift start time:')
+        end_label = QLabel()
+        end_label.setText('Shift end time:')
+        time_grid.addWidget(start_label, 0, 0)
+        time_grid.addWidget(self.start_time_input, 0, 1)
+        time_grid.addWidget(end_label, 1, 0)
+        time_grid.addWidget(self.end_time_input, 1, 1)
+
         self.date_input = QCalendarWidget()
 
-        layout.addWidget(add_button)
-        layout.addWidget(del_button)
-        layout.addWidget(save_button)
-        layout.addWidget(self.start_time_input)
-        layout.addWidget(self.end_time_input)
-        layout.addWidget(self.date_input)
+        controls.addLayout(time_grid)
+        controls.addWidget(self.date_input)
+        controls.addWidget(save_button)
+        controls.addWidget(del_button)
+        controls.addWidget(add_button)
+
+        layout.addLayout(controls)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -153,7 +167,11 @@ class MainWindow(QMainWindow):
 
     def save_to_file(self) -> None:
         """opens a file dialog and saves the file to the specified filename"""
-        self.calendar.to_file(Path(self.save_dialog.getSaveFileName()[0]))
+        from_dialog = self.save_dialog.getSaveFileName()[0]
+        if from_dialog != '':
+            self.calendar.to_file(Path())
+        else:
+            log.warning('Save dialog closed. File not saved!')
 
 
 app = QApplication(sys.argv)
